@@ -1,0 +1,162 @@
+{
+    "config": {
+        "target": "http://localhost/mayhem_server",
+        "phases": [{
+            "duration": 1,
+            "arrivalCount": 1
+        },
+        {
+            "pause": 300
+        }],
+        "defaults": {
+            "headers": {
+                "Content-Type": "application/json; charset=utf-8",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36"
+            }
+        },
+        "processor": "./makeAccount.js",
+        "payload": {
+            "order": "sequence",
+            "path": "./user-total.csv",
+            "fields": ["id"]
+        }
+    },
+    "scenarios": [{
+        "name": "login & battle Seq",
+        "flow": [
+            {
+                "post": {
+                    "url": "http://localhost:10002/status",
+                    "afterResponse": "logHeaders"
+                }
+            },
+            {
+                "post": {
+                    "beforeRequest" : "",
+                    "url": "/confirm/get_sid",
+                    "capture": {
+                        "json": "$.sid",
+                        "as": "sid"
+                    }
+                }
+            },
+            {
+                "post": {
+                    "url": "/get/server_time",
+                    "afterResponse": "logHeaders"
+                }
+            },
+            {
+                "post": {
+                    "url": "/get/rkey",
+                    "afterResponse": "logHeaders"
+                }
+            },
+            {
+                "post": {
+                    "url": "/get/info/ko",
+                    "afterResponse": "logHeaders",
+                    "form": {
+                        "sid": "{{sid}}"
+                    },
+                    "capture": {
+                        "json": "$.dungeon",
+                        "as": "dungeon"
+                    }
+                }
+            },
+            {
+                "post": {
+                    "url": "/confirm/login",
+                    "afterResponse": ["loginUser", "logHeaders"],
+                    "form": {
+                        "sid": "{{sid}}",
+                        "id": "{{id}}",
+                        "pw": "{{id}}sbtest000",
+                        "env": "web"
+                    }
+                }
+            },
+           {
+                "loop": [
+                    {
+                        "post": {
+                            "beforeRequest": ["loopCounter", "battleCounter"],
+                            "url": "/battle/dungeon_start/{{battleLoop}}/1",
+                            "afterResponse": "logHeaders",
+                            "form": {
+                                "sid": "{{sid}}"
+                            }
+                        }
+                    },{
+                        "post": {
+                            "url": "/get/quest_list",
+                            "afterResponse": "logHeaders",
+                            "form": {
+                                "sid": "{{sid}}"
+                            }
+                        }
+                    },
+                    {
+                        "loop": [
+                            {
+                                "post": {
+                                    "url": "/battle/dungeon_battle_start",
+                                    "afterResponse": "logHeaders",
+                                    "form": {
+                                        "sid": "{{sid}}"
+                                    },
+                                    "capture": {
+                                        "json": "$.actor",
+                                        "as": "actor2"
+                                    }
+                                }
+                            },
+                            {
+                                "post": {
+                                    "url": "/battle/dungeon_battle_end",
+                                    "afterResponse": "logHeaders",
+                                    "form": {
+                                        "sid": "{{sid}}",
+                                        "command": {},
+                                        "actor": "{'actor':{'0':{'key':'0','no':34,'actor_no':'1114409','name':'수련 마법사','team':1,'img':86,'shot_img':1,'shot_speed':1,'grade':2,'move_speed':150,'att_speed':1005,'_att_speed':1005,'dec_cooltime':0,'range':200,'att':37,'def':2,'str':5,'int':11,'dex':6,'wil':9,'con':5,'sta':5,'exp':0,'aggr':10,'skill_att':0,'skill_def':0,'critical':0,'absorption':0,'att_con':[],'btn_con':[],'att_con_probit':[],'btn_con_probit':[],'att_con_target':[],'btn_con_target':[],'att_con_time':[],'btn_con_time':[],'hide':0,'att_ani_speed':995,'party_att':0,'party_def':0.05,'passive':11,'purchase':1,'skill1':68,'skill2':0,'summon':false,'transcendence':[2],'type':2,'dir':1,'x':215.18678147325707,'y':350.247778093837,'mp':266,'mmp':266,'rec_mp':1,'critical_att':2,'att_':37,'hp':400,'mhp':400,'boss':false,'skill1_cool':10120,'skill2_cool':0,'att_cool':191.56707578554,'condition':{}},'1':{'key':'1','no':33,'actor_no':'1114410','name':'부제','team':1,'img':85,'shot_img':2,'shot_speed':1,'grade':2,'move_speed':150,'att_speed':1004,'_att_speed':1004,'dec_cooltime':0,'range':150,'att':29,'def':9,'str':6,'int':8,'dex':5,'wil':9,'con':7,'sta':6,'exp':0,'aggr':13,'skill_att':0,'skill_def':0,'critical':0,'absorption':0,'att_con':[],'btn_con':[],'att_con_probit':[],'btn_con_probit':[],'att_con_target':[],'btn_con_target':[],'att_con_time':[],'btn_con_time':[],'hide':0,'att_ani_speed':996,'party_att':0,'party_def':0.05,'passive':14,'purchase':1,'skill1':4,'skill2':0,'summon':false,'transcendence':[3],'type':3,'dir':1,'x':236.1972377571392,'y':329.002762242861,'mp':261,'mmp':261,'rec_mp':1,'critical_att':2,'att_':29,'hp':530,'mhp':530,'boss':false,'skill1_cool':17120,'skill2_cool':0,'att_cool':401.44763661417,'condition':{}},'2':{'key':'2','no':7,'actor_no':'1114411','name':'제국군 병사','team':1,'img':53,'shot_img':0,'shot_speed':0,'grade':2,'move_speed':150,'att_speed':1004,'_att_speed':1004,'dec_cooltime':0,'range':50,'att':41,'def':16,'str':8,'int':4,'dex':5,'wil':7,'con':9,'sta':8,'exp':0,'aggr':17,'skill_att':0,'skill_def':0,'critical':0,'absorption':0,'att_con':[],'btn_con':[],'att_con_probit':[],'btn_con_probit':[],'att_con_target':[],'btn_con_target':[],'att_con_time':[],'btn_con_time':[],'hide':0,'att_ani_speed':996,'party_att':0,'party_def':0.05,'passive':1,'purchase':1,'skill1':8,'skill2':0,'summon':false,'transcendence':[9],'type':5,'dir':1,'x':291.80952380952436,'y':354.8095238095236,'mp':255,'mmp':255,'rec_mp':1,'critical_att':2,'att_':41,'hp':650,'mhp':690,'boss':false,'skill1_cool':10120,'skill2_cool':0,'att_cool':-318,'condition':{}},'3':{'key':'3','no':8,'actor_no':'1114412','name':'제국군 쇠뇌병','team':1,'img':54,'shot_img':0,'shot_speed':1,'grade':2,'move_speed':150,'att_speed':1009,'_att_speed':1009,'dec_cooltime':0,'range':300,'att':42,'def':4,'str':7,'int':5,'dex':10,'wil':6,'con':6,'sta':7,'exp':0,'aggr':13,'skill_att':0,'skill_def':0,'critical':0,'absorption':0,'att_con':[],'btn_con':[],'att_con_probit':[],'btn_con_probit':[],'att_con_target':[],'btn_con_target':[],'att_con_time':[],'btn_con_time':[],'hide':0,'att_ani_speed':991,'party_att':0,'party_def':0.05,'passive':1,'purchase':1,'skill1':13,'skill2':0,'summon':false,'transcendence':[9],'type':4,'dir':1,'x':153.09162121172162,'y':346.7366021405921,'mp':257,'mmp':257,'rec_mp':1,'critical_att':2,'att_':42,'hp':510,'mhp':510,'boss':false,'skill1_cool':7136,'skill2_cool':0,'att_cool':-112.61210960198002,'condition':{}},'4':{'key':'4','no':10001,'actor_no':0,'name':'구더기','team':0,'img':10,'shot_img':0,'shot_speed':0,'grade':1,'move_speed':150,'att_speed':1003,'_att_speed':1003,'dec_cooltime':0,'range':40,'att':21,'def':6,'str':4,'int':4,'dex':4,'wil':4,'con':5,'sta':5,'exp':0,'aggr':10,'skill_att':0,'skill_def':0,'critical':0,'absorption':0,'att_con':[],'btn_con':[],'att_con_probit':[],'btn_con_probit':[],'att_con_target':[],'btn_con_target':[],'att_con_time':[],'btn_con_time':[],'hide':0,'att_ani_speed':997,'party_att':0,'party_def':0,'passive':6,'purchase':2,'skill1':14,'skill2':0,'summon':false,'transcendence':[],'type':0,'dir':-1,'x':329.5714285714325,'y':353.57142857142827,'mp':255,'mmp':255,'rec_mp':1,'critical_att':1,'att_':21,'hp':0,'mhp':400,'boss':false,'skill1_cool':15136,'skill2_cool':0,'att_cool':-237,'condition':{}}}}",
+                                        "win": 1
+                                    }
+                                }
+                            }
+                        ],
+                        "count": "{{battleContNum}}"
+                    },
+                    {
+                        "post": {
+                            "url": "/battle/dungeon_end",
+                            "afterResponse": "logHeaders",
+                            "form": {
+                                "sid": "{{sid}}",
+                                "drop": "%5B%5D"
+                            },
+                            "capture": {
+                                "json": "$.status",
+                                "as": "status3"
+                            }
+                        }
+                    },
+                    {
+                        "post": {
+                            "url": "/get/user_data",
+                            "afterResponse": "logHeaders",
+                            "form": {
+                                "sid": "{{sid}}"
+                            }
+                        }
+                    },
+                    {
+                        "think": 2
+                    }
+                ],
+                "count": 10
+            },
+            {"log" : "[logOut] {{sid}}"}
+        ]
+    }]
+}

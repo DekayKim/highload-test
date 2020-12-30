@@ -1,0 +1,10 @@
+{
+    "host": "http://dev.zip-lab.co.kr/innocent",
+    "userCount": 1,
+    "loginPerSec": 1,
+    "_host": "http://localhost/mayhem_server",
+    "_userCount": 300,
+    "_loginPerSec": 20,
+    "_rus_userCount": 50,
+    "_rus_loginPerSec": 5
+}

@@ -1,0 +1,176 @@
+{
+    "config": {
+        "target": "http://localhost/mayhem_server",
+        "phases": [{
+            "duration": 100,
+            "arrivalRate": 2
+        }],
+        "defaults": {
+            "headers": {
+                "Content-Type": "application/json; charset=utf-8",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36"
+            }
+        },
+        "processor": "./makeAccount.js",
+        "payload": {
+         "order" : "sequence",
+          "path": "./user-500.csv",
+          "fields": ["id"]
+        }
+    },
+    "scenarios": [{
+        "flow": [{
+            "post": {
+                "url": "http://localhost:10002/status",
+                "afterResponse": "logHeaders"
+            }
+        }, {
+            "post": {
+                "url": "/confirm/get_sid",
+                "afterResponse": "logHeaders",
+                "capture": {
+                    "json": "$.sid",
+                    "as": "sid"
+                }
+            }
+        },
+        {
+            "post": {
+                "url": "/get/server_time",
+                "afterResponse": "logHeaders",
+                "capture": {
+                    "json": "$.time",
+                    "as": "time"
+                }
+            }
+        },
+        {
+            "post": {
+                "url": "/get/rkey",
+                "afterResponse": "logHeaders"
+            }
+        },
+        {
+            "post": {
+                "url": "/get/info/ko",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                },
+                "capture": {
+                    "json": "$.actor",
+                    "as": "actor"
+                }
+            }
+        },
+        {
+            "post": {
+                "url": "/confirm/make_user",
+                "afterResponse": [ "joinCount", "logHeaders"],
+                "form": {
+                    "sid": "{{sid}}",
+                    "id": "{{id}}",
+                    "pw": "{{id}}sbtest000",
+                    "name": "{{id}}",
+                    "email": "{{id}}@.c",
+                    "env": "web"
+                },
+                "capture": [{
+                    "json": "$.status",
+                    "as": "make_user_status"
+                },{
+                    "json": "$.lpw",
+                    "as": "make_user_lpw"
+                }]
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/get/pub_list",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                }
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/set/pub_buy/2",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                }
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/set/pub_buy/1",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                }
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/set/pub_buy/0",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                }
+            }
+        },{
+            "think": 1
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/get/user_actor_data",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                },
+                "capture": [{
+                    "json": "$[0].no",
+                    "as": "user_actor_data_0"
+                },{
+                    "json": "$[1].no",
+                    "as": "user_actor_data_1"
+                },{
+                    "json": "$[2].no",
+                    "as": "user_actor_data_2"
+                }]
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/set/add_team_actor/{{user_actor_data_0}}",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                }
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/set/add_team_actor/{{user_actor_data_1}}",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                }
+            }
+        },{
+            "post": {
+                "ifTrue" : "make_user_status == 1",
+                "url": "/set/add_team_actor/{{user_actor_data_2}}",
+                "afterResponse": "logHeaders",
+                "form": {
+                    "sid": "{{sid}}"
+                },
+                "capture": {
+                    "json": "$.status",
+                    "as": "add_team_actor_status"
+                }
+            }
+        }]
+    }]
+}
